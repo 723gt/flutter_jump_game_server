@@ -1,0 +1,27 @@
+{
+  "name": "mmo_server",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "scripts": {
+    "server": "ts-node src/server/index.ts",
+    "client": "ts-node src/client/index.ts",
+    "build": "npx tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^12.20.55",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "express": "^4.21.1",
+    "socket.io": "^4.8.0",
+    "socket.io-client": "^4.8.0",
+    "ts-node": "^10.9.2",
+    "uuid": "^10.0.0"
+  }
+}

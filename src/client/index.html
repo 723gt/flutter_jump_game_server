@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socket.IO Client</title>
+  <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/9.0.0/uuidv4.min.js"></script>
+</head>
+<body>
+  <h1>Socket.IO Client</h1>
+  <button id="sendMessageBtn">Send Message</button>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Socket.IO サーバーに接続
+      const socket = io("http://localhost:3000", { path: "/socket/" });
+
+      // ユーザー情報の作成
+      const uuid = uuidv4();
+      const userInfo = { name: "hoge", uuid: uuid };
+
+      // 接続時の処理
+      socket.on("connect", () => {
+        console.log("client connected");
+      });
+
+      // サーバーからのjoinイベントの処理
+      socket.on("join", params => {
+        console.log("joininfo");
+        console.log(params);
+      });
+
+      // サーバーからのuser-join-infoイベントの処理
+      socket.on("user-join-info", params => {
+        const users = params;
+        console.log(users);
+      });
+
+      // ボタンをクリックしたときにメッセージを送信
+      document.getElementById("sendMessageBtn").addEventListener("click", () => {
+        console.log("Sending user info to server");
+        socket.emit("info", userInfo); // サーバーにメッセージを送信
+      });
+    });
+  </script>
+</body>
+</html>
