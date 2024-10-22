@@ -4,12 +4,11 @@ import { v4 as uuidv4 } from 'uuid';
 const socket = io("http://localhost:3000", { path: "/socket/" });
 
 type UserInfo = {
-  name: string,
-  uuid: string
+  clientId: string
 }
 
 const uuid = uuidv4();
-const  userInfo: UserInfo = {name: "bar", uuid: uuid};
+const  userInfo: UserInfo = { clientId: uuid};
 socket.on("connect", () => {
   socket.emit("join", {roomId: "room01"});
   console.log("client connected");

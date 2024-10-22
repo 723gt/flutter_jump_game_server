@@ -3,8 +3,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 
 type UserInfo = {
-  name: string,
-  uuid: string,
+  clientId: string,
 }
 
 type ServerUserInfo = { 
@@ -26,12 +25,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
 
 io.on("connection", (socket) => {
   let roomId:string;
-  // io.emit("join","hello");
-  console.log("connected");
-  console.log(socket.id)
   socket.on("join", (params) => {
-    console.log("join!")
-    console.log(params.roomId)
     roomId = params.roomId;
     socket.join(roomId);
   });
@@ -39,20 +33,17 @@ io.on("connection", (socket) => {
     console.log("join-info");
     const userInfo: UserInfo = params as UserInfo;
     addUserInfo(roomId,socket.id, userInfo);
-    console.log("room!")
-    console.log(roomId)
     io.to(roomId).emit("user-join-info", userInfos(roomId));
   });
 
   socket.on("disconnect", params => {
-    console.log("======")
-    // console.log(socket.id)
     removeUserInfo(socket.id);
     io.to(roomId).emit("user-join-info", userInfos(roomId));
   })
 
-  socket.on("jump", _ => {
-    console.log("jump!!");
+  socket.on("jump", params => {
+    const jumpUser = getUserInfo(socket.id);
+    io.to(roomId).emit("user-jump", jumpUser);
   });
 });
 
@@ -75,4 +66,12 @@ function removeUserInfo(id: string): void{
 function userInfos(roomId :string): Array<UserInfo> {
   const roomUsers = users.filter(item => item.roomId == roomId);
   return roomUsers.map(item => item.info);
+}
+
+function getUserInfo(id: string): UserInfo | null{
+  const selectedUser = users.find(item => item.id == id );
+  if(selectedUser === undefined){
+    return null;
+  }
+  return selectedUser.info;
 }
