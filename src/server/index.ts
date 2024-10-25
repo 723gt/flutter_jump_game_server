@@ -28,15 +28,19 @@ app.get("/", (req: express.Request, res: express.Response) => {
   });
 });
 
+// ユーザの接続
 io.on("connection", (socket) => {
   let roomId:string;
+  // ルームへの参加
   socket.on("join", (params) => {
     roomId = params.roomId;
     socket.join(roomId);
   });
+  // 自身のIDを受信, socket.io側のidとセットにして保存
   socket.on("info", (params) => {
     const userInfo: UserInfo = params as UserInfo;
     addUserInfo(roomId,socket.id, userInfo);
+    // ルームに参加しているユーザ情報を通知
     io.to(roomId).emit("user-join-info", getUserInfos(roomId));
   });
 
@@ -45,12 +49,16 @@ io.on("connection", (socket) => {
     io.to(roomId).emit("user-join-info", getUserInfos(roomId));
   })
 
+  // ユーザのジャンプを受信
   socket.on("jump", params => {
     const jumpUser = getUserInfo(socket.id);
+    // ルームへジャンプしたユーザを通知
     io.to(roomId).emit("user-jump", jumpUser);
   });
 
+  // ゲームの準備完了を受信
   socket.on("start", params => {
+    // 準備完了のユーザを保存する
     const startReadyUser = getUserInfo(socket.id);
     if(startReadyUser != null){
       const duplicate = readyUsers.filter((f) => f.clientId == startReadyUser.clientId);
@@ -58,14 +66,16 @@ io.on("connection", (socket) => {
         readyUsers.push(startReadyUser);
       }
     }
-
+    // ルーム内の全員が準備完了した場合ゲームを開始、球の発射
     if(isGameStart(roomId)){
       startBullet();
     }
   });
 
+  // ヒット情報の受信
   socket.on('hit', params => {
     const hitUser = getUserInfo(socket.id);
+    // ヒットしたユーザを保存
     if(hitUser != null){
       io.to(roomId).emit('user-hit', {clientId: hitUser.clientId})
       const duplicate = gameOverUsers.filter((f) => f.clientId == hitUser.clientId);
@@ -73,6 +83,7 @@ io.on("connection", (socket) => {
         gameOverUsers.push(hitUser);
       }
     }
+    // ルーム内のユーザが全員ヒットしたらゲーム終了をルームに送信
     if(isGameSet(roomId)){
       stopBullet();
       io.to(roomId).emit("gameSet", {});
@@ -80,6 +91,7 @@ io.on("connection", (socket) => {
       readyUsers = [];
     }
   })
+  // 5秒ごとに球の発射を通知
   function startBullet() {
     if (intervalId === null) {
         intervalId = setInterval(() => {
@@ -88,6 +100,7 @@ io.on("connection", (socket) => {
     }
   }
 
+  // ゲーム終了時に球の発射を停止
   function stopBullet() {
     if (intervalId !== null) {
         clearInterval(intervalId);
